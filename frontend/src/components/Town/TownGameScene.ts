@@ -529,7 +529,7 @@ export default class TownGameScene extends Phaser.Scene {
           font: '18px monospace',
           color: '#000000',
           // padding: {x: 20, y: 10},
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFFFFF',
         },
       );
       player.gameObjects = {
