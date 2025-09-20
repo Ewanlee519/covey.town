@@ -32,6 +32,7 @@ class QuantumBoardProxyController extends TicTacToeAreaController {
         state: {
           status: 'IN_PROGRESS',
           moves: [],
+          moveCount: 0,
         },
       },
       history: [],

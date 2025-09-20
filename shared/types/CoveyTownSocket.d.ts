@@ -118,6 +118,7 @@ export interface TicTacToeGameState extends WinnableGameState {
   moves: ReadonlyArray<TicTacToeMove>;
   x?: PlayerID;
   o?: PlayerID;
+  moveCount: number;
 }
 
 /**
