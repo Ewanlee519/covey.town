@@ -15,16 +15,14 @@ import Game from './Game';
  * @see https://en.wikipedia.org/wiki/Tic-tac-toe
  */
 export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMove> {
-  
   public constructor() {
     super({
       moves: [],
       status: 'WAITING_TO_START',
-      moveCount: 0,
     });
   }
 
-  public get _board() {
+  private get _board() {
     const { moves } = this.state;
     const board = [
       ['', '', ''],
@@ -96,9 +94,9 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
     }
 
     // A move is only valid if it is the player's turn
-    if (move.gamePiece === 'X' && this.state.moveCount % 2 === 1) {
+    if (move.gamePiece === 'X' && this.state.moves.length % 2 === 1) {
       throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
-    } else if (move.gamePiece === 'O' && this.state.moveCount % 2 === 0) {
+    } else if (move.gamePiece === 'O' && this.state.moves.length % 2 === 0) {
       throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     }
     // A move is valid only if game is in progress
@@ -111,7 +109,6 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
     this.state = {
       ...this.state,
       moves: [...this.state.moves, move],
-      moveCount: this.state.moveCount + 1,
     };
     this._checkForGameEnding();
   }
@@ -207,7 +204,6 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
       this.state = {
         moves: [],
         status: 'WAITING_TO_START',
-        moveCount: 0,
       };
       return;
     }

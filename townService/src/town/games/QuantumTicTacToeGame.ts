@@ -5,6 +5,7 @@ import InvalidParametersError, {
   MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
+  GAME_OVER_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import {
   GameMove,
@@ -32,7 +33,7 @@ export default class QuantumTicTacToeGame extends Game<
 
   private _moveCount: number;
 
-  private _wonBoards: { A: boolean; B: boolean; C: boolean };
+  private _gameEnded: { A: boolean; B: boolean; C: boolean };
 
   public constructor() {
     super({
@@ -67,7 +68,7 @@ export default class QuantumTicTacToeGame extends Game<
     this._xScore = 0;
     this._oScore = 0;
     this._moveCount = 0;
-    this._wonBoards = { A: false, B: false, C: false };
+    this._gameEnded = { A: false, B: false, C: false };
   }
 
   protected _join(player: Player): void {
@@ -102,12 +103,35 @@ export default class QuantumTicTacToeGame extends Game<
     if (this.state.x !== player.id && this.state.o !== player.id) {
       throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     }
+    for (const game of Object.values(this._games)) {
+      if (game.state.x === player.id || game.state.o === player.id) {
+        game.leave(player);
+      }
+    }
     // Handles case where the game has not started yet
     if (this.state.o === undefined) {
       this.state = {
-        ...this.state,
         moves: [],
         status: 'WAITING_TO_START',
+        xScore: 0,
+        oScore: 0,
+        publiclyVisible: {
+          A: [
+            [false, false, false],
+            [false, false, false],
+            [false, false, false],
+          ],
+          B: [
+            [false, false, false],
+            [false, false, false],
+            [false, false, false],
+          ],
+          C: [
+            [false, false, false],
+            [false, false, false],
+            [false, false, false],
+          ],
+        },
       };
       return;
     }
@@ -123,11 +147,6 @@ export default class QuantumTicTacToeGame extends Game<
         status: 'OVER',
         winner: this.state.x,
       };
-    }
-    for (const game of Object.values(this._games)) {
-      if (game.state.x === player.id || game.state.o === player.id) {
-        game.leave(player);
-      }
     }
   }
 
@@ -146,19 +165,24 @@ export default class QuantumTicTacToeGame extends Game<
 
     // A move is valid if the sub-game is not over
     if (this._games[board].state.status === 'OVER') {
-      throw new InvalidParametersError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+      throw new InvalidParametersError(GAME_OVER_MESSAGE);
     }
 
     // A move is valid if the space is empty
-    let boardMove = this._games[board]._board[move.move.row][move.move.col]
-    if (boardMove === move.move.gamePiece) {
-      throw new InvalidParametersError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+    for (const m of this._games[board].state.moves) {
+      if (
+        m.col === move.move.col &&
+        m.row === move.move.row &&
+        m.gamePiece === move.move.gamePiece
+      ) {
+        throw new InvalidParametersError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+      }
     }
 
     // A move is only valid if it is the player's turn
-    if (move.move.gamePiece === 'X' && this._moveCount % 2 === 1) {
+    if (move.move.gamePiece === 'X' && this.state.moves.length % 2 === 1) {
       throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
-    } else if (move.move.gamePiece === 'O' && this._moveCount % 2 === 0) {
+    } else if (move.move.gamePiece === 'O' && this.state.moves.length % 2 === 0) {
       throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     }
 
@@ -177,6 +201,11 @@ export default class QuantumTicTacToeGame extends Game<
       if (m.gamePiece !== gamePiece && m.col === col && m.row === row) {
         // This move is a "collapse" move, revealing the position publicly
         this.state.publiclyVisible[board][row][col] = true;
+        move.move.gamePiece = m.gamePiece;
+        this.state = {
+          ...this.state,
+          moves: [...this.state.moves, move.move],
+        };
         this._updateMoveCount();
         return;
       }
@@ -202,19 +231,13 @@ export default class QuantumTicTacToeGame extends Game<
     // TODO: implement me
     for (const boardKey of ['A', 'B', 'C'] as const) {
       const boardGame = this._games[boardKey];
-      if (boardGame.state.status === 'OVER' && boardGame.state.winner && !this._wonBoards[boardKey]) {
+      if (boardGame.state.status === 'OVER' && !this._gameEnded[boardKey]) {
         if (boardGame.state.winner === this.state.x) {
           this._xScore++;
         } else if (boardGame.state.winner === this.state.o) {
           this._oScore++;
         }
-        // Mark all positions on this board as publicly visible
-        this.state.publiclyVisible[boardKey] = [
-          [true, true, true],
-          [true, true, true],
-          [true, true, true],
-        ];
-        this._wonBoards[boardKey] = true;
+        this._gameEnded[boardKey] = true;
       }
     }
     this.state = {
@@ -230,7 +253,7 @@ export default class QuantumTicTacToeGame extends Game<
    */
   private _checkForGameEnding(): void {
     // TODO: implement me
-    let gameOverCount: number = 0;
+    let gameOverCount = 0;
     for (const boardKey of ['A', 'B', 'C'] as const) {
       if (this._games[boardKey].state.status === 'OVER') {
         gameOverCount++;
@@ -254,8 +277,5 @@ export default class QuantumTicTacToeGame extends Game<
 
   private _updateMoveCount(): void {
     this._moveCount++;
-    for (const game of Object.values(this._games)) {
-      game.state.moveCount = this._moveCount;
-    }
   }
 }

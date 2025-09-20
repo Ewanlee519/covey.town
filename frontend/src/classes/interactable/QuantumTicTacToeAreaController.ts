@@ -134,18 +134,21 @@ export default class QuantumTicTacToeAreaController extends GameAreaController<
           [undefined, undefined, undefined],
           [undefined, undefined, undefined],
         ];
+        // So every time a collapse happens, it is overwritten with X and turn switch does not properly happen
         newState.state.moves
-        .filter(move => move.board === boardKey)
-        .forEach(move => {
-          if (newState.state.publiclyVisible[boardKey][move.row][move.col] === true){
-            move.gamePiece = move.gamePiece === 'X' ? 'O' : 'X';
-            newBoard[move.row][move.col] = move.gamePiece;
-          } else{
-            if (move.gamePiece === this.gamePiece) {
+          .filter(move => move.board === boardKey)
+          .forEach(move => {
+            if (
+              newState.state.publiclyVisible[boardKey][move.row][move.col] === true &&
+              newBoard[move.row][move.col] === undefined
+            ) {
               newBoard[move.row][move.col] = move.gamePiece;
+            } else {
+              if (move.gamePiece === this.gamePiece) {
+                newBoard[move.row][move.col] = move.gamePiece;
+              }
             }
-          }
-        });
+          });
         if (!_.isEqual(this._boards[boardKey], newBoard)) {
           this._boards[boardKey] = newBoard;
           this.emit('boardChanged', this._boards);

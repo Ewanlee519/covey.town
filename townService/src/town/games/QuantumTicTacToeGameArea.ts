@@ -1,7 +1,7 @@
 import InvalidParametersError, {
   GAME_ID_MISSMATCH_MESSAGE,
-  GAME_NOT_IN_PROGRESS_MESSAGE, 
-  INVALID_COMMAND_MESSAGE 
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  INVALID_COMMAND_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import {
@@ -78,8 +78,8 @@ export default class QuantumTicTacToeGameArea extends GameArea<QuantumTicTacToeG
         gameID: command.gameID,
         playerID: player.id,
         move: command.move,
-      })
-      this._stateUpdated(game.toModel())
+      });
+      this._stateUpdated(game.toModel());
       return undefined as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'JoinGame') {
@@ -89,7 +89,7 @@ export default class QuantumTicTacToeGameArea extends GameArea<QuantumTicTacToeG
         this._game = game;
       }
       game.join(player);
-      this._stateUpdated(game.toModel())
+      this._stateUpdated(game.toModel());
       return { gameID: game.id } as InteractableCommandReturnType<CommandType>;
     }
     if (command.type === 'LeaveGame') {
@@ -101,7 +101,7 @@ export default class QuantumTicTacToeGameArea extends GameArea<QuantumTicTacToeG
         throw new InvalidParametersError(GAME_ID_MISSMATCH_MESSAGE);
       }
       game.leave(player);
-      this._stateUpdated(game.toModel())
+      this._stateUpdated(game.toModel());
       return undefined as InteractableCommandReturnType<CommandType>;
     }
     throw new InvalidParametersError(INVALID_COMMAND_MESSAGE);
