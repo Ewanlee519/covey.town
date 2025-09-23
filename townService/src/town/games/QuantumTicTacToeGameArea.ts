@@ -61,7 +61,6 @@ export default class QuantumTicTacToeGameArea extends GameArea<QuantumTicTacToeG
     command: CommandType,
     player: Player,
   ): InteractableCommandReturnType<CommandType> {
-    // TODO: implement this based on the similar method in TicTacToeGameArea
     // I think I'll need the _stateUpdated helper method, above.
     if (command.type === 'GameMove') {
       const game = this._game;

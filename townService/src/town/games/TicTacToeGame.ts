@@ -99,10 +99,20 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
     } else if (move.gamePiece === 'O' && this.state.moves.length % 2 === 0) {
       throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     }
+
     // A move is valid only if game is in progress
     if (this.state.status !== 'IN_PROGRESS') {
       throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
     }
+  }
+
+  /**
+   * Processes QuantumTicTacToeMoves to skip validation in TicTacToeGame
+   *
+   * @param move is the quantum move passed as a TicTacToeMove to access the private apply move
+   */
+  public _quantumApplyMove(move: TicTacToeMove): void {
+    this._applyMove(move);
   }
 
   private _applyMove(move: TicTacToeMove): void {
